@@ -54,7 +54,6 @@ The application requires the following environment variables to run:
 | `DB_URL` | PostgreSQL connection string | `postgres://postgres:postgres@localhost:54322/postgres?sslmode=disable` |
 | `SUPABASE_URL` | Supabase Project URL | `https://your-project-id.supabase.co` (or `http://localhost:54321`) |
 | `SUPABASE_ANON_KEY` | Supabase public/anonymous API key | `eyJhbGciOi...` |
-| `SUPABASE_JWT_SECRET` | Supabase JWT Secret used to verify auth tokens | `your-supabase-jwt-secret` |
 
 ---
 
