@@ -8,6 +8,7 @@ import (
 	"github.com/AnangM/livestok-erp/internal/domain"
 	"github.com/AnangM/livestok-erp/internal/service"
 	"github.com/AnangM/livestok-erp/internal/transport/http/middleware"
+	"github.com/go-chi/chi/v5"
 )
 
 type AnimalHandler struct {
@@ -65,4 +66,56 @@ func (h *AnimalHandler) List(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(animals)
+}
+
+func (h *AnimalHandler) Get(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	if id == "" {
+		http.Error(w, "Animal ID is required", http.StatusBadRequest)
+		return
+	}
+
+	animal, err := h.service.GetAnimal(r.Context(), id)
+	if err != nil {
+		http.Error(w, "Animal not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(animal)
+}
+
+func (h *AnimalHandler) Update(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	if id == "" {
+		http.Error(w, "Animal ID is required", http.StatusBadRequest)
+		return
+	}
+
+	var animal domain.Animal
+	err := json.NewDecoder(r.Body).Decode(&animal)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
+
+	// Get farm/user ID from the authenticated Supabase context
+	farmID, ok := r.Context().Value(middleware.UserIdKey).(string)
+	if !ok || farmID == "" {
+		http.Error(w, "Unauthorized: missing user identity", http.StatusUnauthorized)
+		return
+	}
+
+	animal.FarmID = farmID
+
+	animal, err = h.service.UpdateAnimal(r.Context(), id, &animal)
+	if err != nil {
+		log.Printf("[AnimalHandler] Update failed: %v", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(animal)
 }

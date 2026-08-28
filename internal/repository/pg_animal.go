@@ -10,6 +10,8 @@ import (
 type AnimalRepository interface {
 	Create(ctx context.Context, animal *domain.Animal) error
 	List(ctx context.Context, farmId string) ([]domain.Animal, error)
+	Update(ctx context.Context, id string, animal *domain.Animal) (domain.Animal, error)
+	Get(ctx context.Context, id string) (domain.Animal, error)
 }
 
 type PgAnimalRepository struct {
@@ -75,4 +77,34 @@ func (r *PgAnimalRepository) List(ctx context.Context, farmId string) ([]domain.
 	}
 
 	return animals, nil
+}
+
+func (r *PgAnimalRepository) Update(ctx context.Context, id string, a *domain.Animal) (domain.Animal, error) {
+	query := `
+	UPDATE animals
+	SET tag_number = $2, breed = $3, gender = $4, sire_id = $5, dam_id = $6, birth_date = $7, status = $8
+	WHERE id = $1
+	RETURNING id, farm_id, tag_number, breed, gender, sire_id, dam_id, birth_date, status, created_at
+	`
+	var updatedAnimal domain.Animal
+	err := r.db.QueryRowContext(ctx, query, id, a.TagNumber, a.Breed, a.Gender, a.SireID, a.DamID, a.BirthDate, a.Status).Scan(&updatedAnimal.ID, &updatedAnimal.FarmID, &updatedAnimal.TagNumber, &updatedAnimal.Breed, &updatedAnimal.Gender, &updatedAnimal.SireID, &updatedAnimal.DamID, &updatedAnimal.BirthDate, &updatedAnimal.Status, &updatedAnimal.CreatedAt)
+	if err != nil {
+		return domain.Animal{}, err
+	}
+	return updatedAnimal, nil
+}
+
+func (r *PgAnimalRepository) Get(ctx context.Context, id string) (domain.Animal, error) {
+	query := `
+	SELECT
+	id, tag_number, breed, gender, sire_id, dam_id, birth_date, status, created_at
+	FROM animals
+	WHERE id = $1
+	`
+	var animal domain.Animal
+	err := r.db.QueryRowContext(ctx, query, id).Scan(&animal.ID, &animal.TagNumber, &animal.Breed, &animal.Gender, &animal.SireID, &animal.DamID, &animal.BirthDate, &animal.Status, &animal.CreatedAt)
+	if err != nil {
+		return domain.Animal{}, err
+	}
+	return animal, nil
 }
