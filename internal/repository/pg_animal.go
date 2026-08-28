@@ -12,6 +12,7 @@ type AnimalRepository interface {
 	List(ctx context.Context, farmId string) ([]domain.Animal, error)
 	Update(ctx context.Context, id string, animal *domain.Animal) (domain.Animal, error)
 	Get(ctx context.Context, id string) (domain.Animal, error)
+	Delete(ctx context.Context, id string) error
 }
 
 type PgAnimalRepository struct {
@@ -107,4 +108,16 @@ func (r *PgAnimalRepository) Get(ctx context.Context, id string) (domain.Animal,
 		return domain.Animal{}, err
 	}
 	return animal, nil
+}
+
+func (r *PgAnimalRepository) Delete(ctx context.Context, id string) error {
+	query := `
+	DELETE FROM animals
+	WHERE id = $1
+	`
+	_, err := r.db.ExecContext(ctx, query, id)
+	if err != nil {
+		return err
+	}
+	return nil
 }

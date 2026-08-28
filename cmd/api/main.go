@@ -65,5 +65,6 @@ func ApiRoutes(db *sql.DB) chi.Router {
 	r.Get("/", animalHandler.List)
 	r.Get("/{id}", animalHandler.Get)
 	r.Put("/{id}", animalHandler.Update)
+	r.Delete("/{id}", animalHandler.Delete)
 	return r
 }

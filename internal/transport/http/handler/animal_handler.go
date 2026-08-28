@@ -119,3 +119,19 @@ func (h *AnimalHandler) Update(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(animal)
 }
+
+func (h *AnimalHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	if id == "" {
+		http.Error(w, "Animal ID is required", http.StatusBadRequest)
+		return
+	}
+
+	err := h.service.DeleteAnimal(r.Context(), id)
+	if err != nil {
+		http.Error(w, "Animal not found", http.StatusNotFound)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}

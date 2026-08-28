@@ -15,6 +15,7 @@ type AnimalServiceInterface interface {
 	ListAnimals(ctx context.Context, farmId string) ([]domain.Animal, error)
 	UpdateAnimal(ctx context.Context, id string, animal *domain.Animal) (domain.Animal, error)
 	GetAnimal(ctx context.Context, id string) (domain.Animal, error)
+	DeleteAnimal(ctx context.Context, id string) error
 }
 
 type AnimalService struct {
@@ -97,4 +98,23 @@ func (s *AnimalService) GetAnimal(ctx context.Context, id string) (domain.Animal
 	}
 
 	return s.repo.Get(ctx, id)
+}
+
+func (s *AnimalService) DeleteAnimal(ctx context.Context, id string) error {
+
+	if id == "" {
+		return errors.New("animal id is required")
+	}
+
+	animal, err := s.repo.Get(ctx, id)
+
+	if err != nil {
+		return err
+	}
+
+	if animal.ID == "" {
+		return errors.New("animal not found")
+	}
+
+	return s.repo.Delete(ctx, id)
 }
