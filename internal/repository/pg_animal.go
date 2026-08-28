@@ -9,6 +9,7 @@ import (
 
 type AnimalRepository interface {
 	Create(ctx context.Context, animal *domain.Animal) error
+	List(ctx context.Context, farmId string) ([]domain.Animal, error)
 }
 
 type PgAnimalRepository struct {
@@ -42,4 +43,36 @@ func (r *PgAnimalRepository) Create(ctx context.Context, animal *domain.Animal) 
 		return err
 	}
 	return nil
+}
+
+func (r *PgAnimalRepository) List(ctx context.Context, farmId string) ([]domain.Animal, error) {
+	query := `
+	SELECT
+	id, tag_number, breed, gender, sire_id, dam_id, birth_date, status, created_at
+	FROM animals
+	WHERE farm_id = $1
+	ORDER BY created_at DESC;
+	`
+
+	rows, err := r.db.QueryContext(ctx, query, farmId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var animals []domain.Animal
+
+	for rows.Next() {
+		var a domain.Animal
+		if err := rows.Scan(&a.ID, &a.TagNumber, &a.Breed, &a.Gender, &a.SireID, &a.DamID, &a.BirthDate, &a.Status, &a.CreatedAt); err != nil {
+			return nil, err
+		}
+		animals = append(animals, a)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return animals, nil
 }

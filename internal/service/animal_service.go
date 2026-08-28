@@ -12,6 +12,7 @@ import (
 
 type AnimalServiceInterface interface {
 	RegisterNewAnimal(ctx context.Context, animal *domain.Animal) error
+	ListAnimals(ctx context.Context, farmId string) ([]domain.Animal, error)
 }
 
 type AnimalService struct {
@@ -41,4 +42,8 @@ func (s *AnimalService) RegisterNewAnimal(ctx context.Context, a *domain.Animal)
 	}
 
 	return s.repo.Create(ctx, a)
+}
+
+func (s *AnimalService) ListAnimals(ctx context.Context, farmId string) ([]domain.Animal, error) {
+	return s.repo.List(ctx, farmId)
 }

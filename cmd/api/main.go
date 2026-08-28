@@ -44,13 +44,9 @@ func main() {
 	authHandler := handler.NewAuthHandler(authService)
 	r.Post("/api/v1/login", authHandler.Login)
 
-	animalRepo := repository.NewPostgresAnimalRepository(db)
-	animalService := service.NewAnimalService(animalRepo)
-	animalHandler := handler.NewAnimalHandler(animalService)
-
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.SupabaseAuth(supabaseUrl, supabaseAnonKey))
-		r.Post("/api/v1/animals", animalHandler.Create)
+		r.Mount("/api/v1/animals", ApiRoutes(db))
 	})
 
 	log.Println("Starting server on :8080")
@@ -58,4 +54,14 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func ApiRoutes(db *sql.DB) chi.Router {
+	r := chi.NewRouter()
+	animalRepo := repository.NewPostgresAnimalRepository(db)
+	animalService := service.NewAnimalService(animalRepo)
+	animalHandler := handler.NewAnimalHandler(animalService)
+	r.Post("/", animalHandler.Create)
+	r.Get("/", animalHandler.List)
+	return r
 }

@@ -48,3 +48,21 @@ func (h *AnimalHandler) Create(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(animal)
 }
+
+func (h *AnimalHandler) List(w http.ResponseWriter, r *http.Request) {
+	farmID, ok := r.Context().Value(middleware.UserIdKey).(string)
+	if !ok || farmID == "" {
+		http.Error(w, "Unauthorized: missing user identity", http.StatusUnauthorized)
+		return
+	}
+
+	animals, err := h.service.ListAnimals(r.Context(), farmID)
+	if err != nil {
+		log.Printf("[AnimalHandler] List failed: %v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(animals)
+}
