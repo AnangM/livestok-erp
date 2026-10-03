@@ -66,5 +66,14 @@ func ApiRoutes(db *sql.DB) chi.Router {
 	r.Get("/{id}", animalHandler.Get)
 	r.Put("/{id}", animalHandler.Update)
 	r.Delete("/{id}", animalHandler.Delete)
+
+	harvestRepo := repository.NewPostgresHarvestRepository(db)
+	harvestService := service.NewHarvestService(harvestRepo)
+	harvestHandler := handler.NewHarvestHandler(harvestService)
+	r.Post("/", harvestHandler.Create)
+	r.Get("/", harvestHandler.List)
+	r.Get("/{id}", harvestHandler.Get)
+	r.Put("/{id}", harvestHandler.Update)
+	r.Delete("/{id}", harvestHandler.Delete)
 	return r
 }
