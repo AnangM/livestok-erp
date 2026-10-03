@@ -146,10 +146,19 @@ The server will start listening on port `:8080`.
 
 ## 🧪 Build & Test
 
-```bash
-# Compile and build the binary
-go build -v ./...
+Unit tests use [`testify`](https://github.com/stretchr/testify) and mocked repositories (`internal/repository/mocks`) to verify business logic without database access:
 
-# Run test suite
-go test -v ./...
+```bash
+# Run unit tests with race detection
+make test
+
+# Run tests and display statement coverage
+make test-cover
+
+# Generate HTML coverage report
+make test-cover-html
+
+# Clean generated test artifacts
+make clean
 ```
+

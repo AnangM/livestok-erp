@@ -8,3 +8,7 @@
 supabase
 
 setup_env.sh
+
+# Test coverage
+coverage.out
+coverage.html

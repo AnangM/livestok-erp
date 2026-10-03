@@ -65,18 +65,18 @@ func (s *HarvestService) UpdateHarvest(ctx context.Context, id string, h *domain
 		return domain.Harvest{}, errors.New("harvest date cannot be in the future")
 	}
 
-	_, err := s.repo.Get(ctx, id)
+	existing, err := s.repo.Get(ctx, id)
 	if err != nil {
 		return domain.Harvest{}, err
 	}
-	if h.ID == "" {
+	if existing.ID == "" {
 		return domain.Harvest{}, errors.New("harvest not found")
 	}
-	h.FarmID = h.FarmID
-	h.AnimalID = h.AnimalID
-	h.Weight = h.Weight
-	h.HarvestDate = h.HarvestDate
-	return s.repo.Update(ctx, id, h)
+	existing.FarmID = h.FarmID
+	existing.AnimalID = h.AnimalID
+	existing.Weight = h.Weight
+	existing.HarvestDate = h.HarvestDate
+	return s.repo.Update(ctx, id, &existing)
 }
 
 func NewHarvestService(repo repository.HarvestRepository) HarvestServiceInterface {
